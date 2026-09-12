@@ -1,15 +1,520 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="refresh" content="0; url=/Memeboard/index.html">
-    <title>Memeboard</title>
-  </head>
-  <body>
-    <script>
-      window.location.replace('/Memeboard/index.html');
-    </script>
-    <p>Loading Memeboard...</p>
-  </body>
-</html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>😂 MEMEBOARD - Because typing normally is boring</title>
+  <meta name="description"
+    content="Memeboard is a chaotic sound keyboard web application that reacts to your typing with meme sounds, animations, visual effects, and secret word triggers.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="dark">
+  <!-- Visual FX Fullscreen Overlay -->
+  <div id="fx-overlay" class="fx-overlay" aria-hidden="true">
+    <canvas id="matrix-canvas" class="matrix-canvas"></canvas>
+    <div id="particles-container" class="particles-container"></div>
+    <div id="screen-flash" class="screen-flash"></div>
+  </div>
+
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-branding">
+        <h1 class="logo-title" id="app-title">
+          <span class="logo-emoji">😂</span> MEMEBOARD
+        </h1>
+        <p class="logo-subtitle">Because typing normally is boring.</p>
+      </div>
+
+      <div class="header-controls">
+        <div class="status-indicator" id="chaos-indicator" title="Chaos mode status">
+          <span class="pulse-dot"></span>
+          <span class="status-text">CHAOS MODE: <strong id="chaos-status-text">ON</strong></span>
+        </div>
+
+        <button type="button" class="btn btn-glass" id="btn-sound-toggle" aria-label="Toggle Sound">
+          <span class="btn-icon" id="sound-icon">🔊</span>
+          <span class="btn-text" id="sound-text">SOUND ON</span>
+        </button>
+
+        <button type="button" class="btn btn-glass" id="btn-theme-quick" aria-label="Cycle Theme" title="Switch Theme">
+          <span class="btn-icon" id="theme-icon">🌑</span>
+          <span class="btn-text" id="theme-text">Dark</span>
+        </button>
+
+        <button type="button" class="btn btn-glass" id="btn-clear-main" aria-label="Clear Text and Reset Chaos">
+          <span class="btn-icon">🗑️</span>
+          <span class="btn-text">Clear</span>
+        </button>
+
+        <button type="button" class="btn btn-glass btn-icon-only" id="btn-settings" aria-label="Open Settings">
+          <span class="btn-icon">⚙️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Display Arena -->
+    <main class="main-display-arena">
+      <!-- Dynamic Reaction / Message Banner -->
+      <section class="reaction-container" aria-live="polite" aria-atomic="true">
+        <div class="reaction-card" id="reaction-card">
+          <span class="reaction-tag">LIVE REACTION</span>
+          <h2 class="reaction-message" id="reaction-message">READY FOR CHAOS... START TYPING!</h2>
+        </div>
+      </section>
+
+      <!-- Typing Display Panel -->
+      <section class="typing-panel">
+        <div class="typing-panel-header">
+          <div class="panel-badge">
+            <span class="badge-dot"></span>
+            <span>TYPING BUFFER</span>
+          </div>
+          <div class="typing-stats">
+            <span id="stat-chars">0 chars</span>
+            <span class="stat-divider">•</span>
+            <span id="stat-words">0 words</span>
+            <button type="button" class="btn-text-action" id="btn-copy-text" title="Copy text to clipboard">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <!-- The visible typing buffer -->
+        <div class="typing-display-box" id="typing-box" tabindex="0" role="textbox" aria-multiline="true"
+          aria-label="Memeboard typing area. Click or start typing on your physical keyboard.">
+          <span id="typed-content" class="typed-content"></span><span class="typing-caret" aria-hidden="true"></span>
+        </div>
+        <div class="typing-instruction">
+          <span>💡 Press any physical key or click the on-screen keys. Type secret words like <code>boom</code>,
+            <code>cat</code>, <code>party</code>, <code>love</code>, <code>fire</code>, <code>sus</code>,
+            <code>ghost</code>, <code>money</code>, <code>matrix</code>, <code>error</code>!</span>
+        </div>
+      </section>
+
+      <!-- Compact Theme Selector -->
+      <section class="theme-selector-bar" aria-label="Theme selector">
+        <span class="theme-selector-label">APPEARANCE</span>
+        <div class="theme-button-group">
+          <button type="button" class="theme-choice-btn active" data-set-theme="dark">Dark</button>
+          <button type="button" class="theme-choice-btn" data-set-theme="light">Light</button>
+          <button type="button" class="theme-choice-btn" data-set-theme="neon">Neon</button>
+        </div>
+      </section>
+
+      <!-- Chaos Level Meter -->
+      <section class="chaos-meter-section">
+        <div class="chaos-meter-header">
+          <div class="chaos-meter-label">
+            <span class="meter-fire">🔥</span>
+            <span class="meter-title">CHAOS LEVEL</span>
+          </div>
+          <div class="chaos-meter-percent" id="chaos-percent">0%</div>
+        </div>
+        <div class="chaos-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+          id="chaos-progressbar">
+          <div class="chaos-fill" id="chaos-fill" style="width: 0%;"></div>
+          <div class="chaos-glow"></div>
+        </div>
+      </section>
+
+      <!-- Trigger Word Pills Bar -->
+      <section class="triggers-ribbon">
+        <span class="triggers-title">⚡ Word Triggers:</span>
+        <div class="triggers-list">
+          <button type="button" class="trigger-pill" data-word="boom">💥 boom</button>
+          <button type="button" class="trigger-pill" data-word="cat">🐱 cat</button>
+          <button type="button" class="trigger-pill" data-word="party">🎉 party</button>
+          <button type="button" class="trigger-pill" data-word="love">❤️ love</button>
+          <button type="button" class="trigger-pill" data-word="fire">🔥 fire</button>
+          <button type="button" class="trigger-pill" data-word="sus">🚨 sus</button>
+          <button type="button" class="trigger-pill" data-word="ghost">👻 ghost</button>
+          <button type="button" class="trigger-pill" data-word="money">💸 money</button>
+          <button type="button" class="trigger-pill" data-word="matrix">💻 matrix</button>
+          <button type="button" class="trigger-pill" data-word="error">💀 error</button>
+        </div>
+      </section>
+
+      <!-- QWERTY Keyboard Section -->
+      <section class="keyboard-section" aria-label="On-Screen Virtual Keyboard">
+        <div class="keyboard-container" id="keyboard-container">
+          <!-- Row 1 -->
+          <div class="keyboard-row" id="row-1">
+            <button type="button" class="key" data-key="q" data-code="KeyQ"><span class="key-char">Q</span><span
+                class="key-meme">WHY Q?</span></button>
+            <button type="button" class="key" data-key="w" data-code="KeyW"><span class="key-char">W</span><span
+                class="key-meme">W</span></button>
+            <button type="button" class="key" data-key="e" data-code="KeyE"><span class="key-char">E</span><span
+                class="key-meme">EEEE</span></button>
+            <button type="button" class="key" data-key="r" data-code="KeyR"><span class="key-char">R</span><span
+                class="key-meme">R</span></button>
+            <button type="button" class="key" data-key="t" data-code="KeyT"><span class="key-char">T</span><span
+                class="key-meme">T</span></button>
+            <button type="button" class="key" data-key="y" data-code="KeyY"><span class="key-char">Y</span><span
+                class="key-meme">Y</span></button>
+            <button type="button" class="key" data-key="u" data-code="KeyU"><span class="key-char">U</span><span
+                class="key-meme">U</span></button>
+            <button type="button" class="key" data-key="i" data-code="KeyI"><span class="key-char">I</span><span
+                class="key-meme">I SEE</span></button>
+            <button type="button" class="key" data-key="o" data-code="KeyO"><span class="key-char">O</span><span
+                class="key-meme">OHH</span></button>
+            <button type="button" class="key" data-key="p" data-code="KeyP"><span class="key-char">P</span><span
+                class="key-meme">P</span></button>
+            <button type="button" class="key key-action key-backspace" data-key="Backspace" data-code="Backspace"
+              aria-label="Backspace"><span class="key-char">⌫</span><span class="key-meme">NOOO 😭</span></button>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="keyboard-row" id="row-2">
+            <button type="button" class="key key-action key-tab" data-key="Tab" data-code="Tab" aria-label="Tab"><span
+                class="key-char">Tab ⇥</span><span class="key-meme">TAB TAB</span></button>
+            <button type="button" class="key" data-key="a" data-code="KeyA"><span class="key-char">A</span><span
+                class="key-meme">AAAAAA!</span></button>
+            <button type="button" class="key" data-key="s" data-code="KeyS"><span class="key-char">S</span><span
+                class="key-meme">SUS?</span></button>
+            <button type="button" class="key" data-key="d" data-code="KeyD"><span class="key-char">D</span><span
+                class="key-meme">DAMAGE</span></button>
+            <button type="button" class="key" data-key="f" data-code="KeyF"><span class="key-char">F</span><span
+                class="key-meme">F 💀</span></button>
+            <button type="button" class="key" data-key="g" data-code="KeyG"><span class="key-char">G</span><span
+                class="key-meme">G</span></button>
+            <button type="button" class="key" data-key="h" data-code="KeyH"><span class="key-char">H</span><span
+                class="key-meme">HUH?</span></button>
+            <button type="button" class="key" data-key="j" data-code="KeyJ"><span class="key-char">J</span><span
+                class="key-meme">J</span></button>
+            <button type="button" class="key" data-key="k" data-code="KeyK"><span class="key-char">K</span><span
+                class="key-meme">K</span></button>
+            <button type="button" class="key" data-key="l" data-code="KeyL"><span class="key-char">L</span><span
+                class="key-meme">LOL</span></button>
+            <button type="button" class="key key-action key-enter" data-key="Enter" data-code="Enter"
+              aria-label="Enter"><span class="key-char">Enter ↵</span><span class="key-meme">BOOM 💥</span></button>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="keyboard-row" id="row-3">
+            <button type="button" class="key key-action key-caps" data-key="CapsLock" data-code="CapsLock"
+              id="key-capslock" aria-label="Caps Lock"><span class="key-char">Caps ⇪</span><span
+                class="key-meme">SHOUTING?</span></button>
+            <button type="button" class="key" data-key="z" data-code="KeyZ"><span class="key-char">Z</span><span
+                class="key-meme">Z</span></button>
+            <button type="button" class="key" data-key="x" data-code="KeyX"><span class="key-char">X</span><span
+                class="key-meme">X</span></button>
+            <button type="button" class="key" data-key="c" data-code="KeyC"><span class="key-char">C</span><span
+                class="key-meme">C</span></button>
+            <button type="button" class="key" data-key="v" data-code="KeyV"><span class="key-char">V</span><span
+                class="key-meme">V</span></button>
+            <button type="button" class="key" data-key="b" data-code="KeyB"><span class="key-char">B</span><span
+                class="key-meme">BONK 💥</span></button>
+            <button type="button" class="key" data-key="n" data-code="KeyN"><span class="key-char">N</span><span
+                class="key-meme">NOPE</span></button>
+            <button type="button" class="key" data-key="m" data-code="KeyM"><span class="key-char">M</span><span
+                class="key-meme">M</span></button>
+            <button type="button" class="key key-action key-shift" data-key="Shift" data-code="ShiftLeft" id="key-shift"
+              aria-label="Shift"><span class="key-char">Shift ⇧</span><span class="key-meme">BIG ENERGY</span></button>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="keyboard-row" id="row-4">
+            <button type="button" class="key key-modifier" data-key="Control" data-code="ControlLeft"
+              aria-label="Control"><span class="key-char">Ctrl</span><span class="key-meme">CONTROL</span></button>
+            <button type="button" class="key key-modifier" data-key="Alt" data-code="AltLeft" aria-label="Alt"><span
+                class="key-char">Alt</span><span class="key-meme">ALT REALITY</span></button>
+            <button type="button" class="key key-space" data-key=" " data-code="Space" aria-label="Space"><span
+                class="key-char">␣ Space</span><span class="key-meme">SPACE TIME</span></button>
+            <button type="button" class="key key-modifier" data-key="Escape" data-code="Escape"
+              aria-label="Escape"><span class="key-char">Esc</span><span class="key-meme">RUN AWAY 🏃</span></button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"
+      hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modal-title">⚙️ Memeboard Settings</h2>
+          <button type="button" class="btn-close" id="btn-close-modal" aria-label="Close Settings">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-name">🔊 Sound Effects</span>
+              <span class="setting-desc">Play meme and key sounds via Web Audio API</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-sound" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-name">✨ Visual Effects</span>
+              <span class="setting-desc">Explosions, matrix rain, confetti, floating hearts</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-effects" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-name">🔥 Chaos Mode</span>
+              <span class="setting-desc">Fills chaos meter and activates Maximum Chaos events</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-chaos" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-name">♿ Reduced Motion</span>
+              <span class="setting-desc">Disable aggressive shakes and screen flashes</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-reduced-motion">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🎵 Custom Shift Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/shift.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-shift" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-shift" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-shift" title="Test Shift Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-shift-status" class="custom-audio-status">Active: sounds/shift.mp3</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🚀 Custom Space Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/space.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-space" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-space" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-space" title="Test Space Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-space-status" class="custom-audio-status">Active: sounds/space.mp3</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">💥 Custom Tab Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/tab.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-tab" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-tab" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-tab" title="Test Tab Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-tab-status" class="custom-audio-status">Active: sounds/tab.mp3 (Thud Effect)</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">😱 Custom 'A' Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/a.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-a" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-a" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-a" title="Test 'A' Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-a-status" class="custom-audio-status">Active: sounds/a.mp3 (AA with Reverb)</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🏃 Custom ESC Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/esc.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-esc" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-esc" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-esc" title="Test ESC Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-esc-status" class="custom-audio-status">Active: sounds/esc.mp3 (Saiiii)</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🚗 Custom Delete Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/delete.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-delete" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-delete" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-delete" title="Test Delete Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-delete-status" class="custom-audio-status">Active: sounds/delete.mp3 (Car)</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🎮 Custom Ctrl Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/ctrl.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-ctrl" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-ctrl" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-ctrl" title="Test Ctrl Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-ctrl-status" class="custom-audio-status">Active: sounds/ctrl.mp3</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🔡 Custom CapsLock Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/caps.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-caps" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-caps" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-caps" title="Test CapsLock Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-caps-status" class="custom-audio-status">Active: sounds/caps.mp3</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🇨 Custom C Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/c.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-c" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-c" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-c" title="Test C Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-c-status" class="custom-audio-status">Active: sounds/c.mp3</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🇪 Custom E Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/e.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-e" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-e" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-e" title="Test E Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-e-status" class="custom-audio-status">Active: sounds/e.mp3</div>
+          </div>
+
+          <div class="setting-item custom-audio-item">
+            <div class="setting-info">
+              <span class="setting-name">🇭 Custom H Key Sound</span>
+              <span class="setting-desc">Auto-loads <code>sounds/h.mp3</code> or pick any file:</span>
+            </div>
+            <div class="custom-audio-controls">
+              <label for="input-custom-h" class="btn btn-glass btn-file-upload">
+                <span>📁 Upload Audio</span>
+                <input type="file" id="input-custom-h" accept="audio/*" hidden>
+              </label>
+              <button type="button" class="btn btn-glass btn-test-audio" id="btn-test-h" title="Test H Sound">
+                <span>▶ Test</span>
+              </button>
+            </div>
+            <div id="custom-h-status" class="custom-audio-status">Active: sounds/h.mp3</div>
+          </div>
+
+          <div class="setting-item theme-selection-item">
+            <div class="setting-info">
+              <span class="setting-name">🎨 Color Theme</span>
+              <span class="setting-desc">Select visual aesthetic style</span>
+            </div>
+            <div class="theme-button-group">
+              <button type="button" class="theme-choice-btn active" data-set-theme="dark">
+                <span>🌑</span> Dark
+              </button>
+              <button type="button" class="theme-choice-btn" data-set-theme="light">
+                <span>○</span> Light
+              </button>
+              <button type="button" class="theme-choice-btn" data-set-theme="neon">
+                <span>●</span> Neon
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="btn-save-settings">Save & Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Built with ❤️ and chaos for <strong>Memeboard</strong> v1.0 • No frameworks • 100% Vanilla JS</p>
+    </footer>
+  </div>
+
+  <audio id="audio-shift-element" src="sounds/shift.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-space-element" src="sounds/space.mp3?v=2" preload="auto"></audio>
+  <audio id="audio-tab-element" src="sounds/tab.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-a-element" src="sounds/a.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-esc-element" src="sounds/esc.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-delete-element" src="sounds/delete.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-ctrl-element" src="sounds/ctrl.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-caps-element" src="sounds/caps.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-c-element" src="sounds/c.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-e-element" src="sounds/e.mp3?v=1" preload="auto"></audio>
+  <audio id="audio-h-element" src="sounds/h.mp3?v=1" preload="auto"></audio>
+  <script src="script.js"></script>
+</body>
