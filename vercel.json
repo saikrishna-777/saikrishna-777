@@ -6,6 +6,22 @@
     {
       "source": "/",
       "destination": "/Memeboard/index.html"
+    },
+    {
+      "source": "/style.css",
+      "destination": "/Memeboard/style.css"
+    },
+    {
+      "source": "/script.js",
+      "destination": "/Memeboard/script.js"
+    },
+    {
+      "source": "/sounds/:path*",
+      "destination": "/Memeboard/sounds/:path*"
+    },
+    {
+      "source": "/assets/:path*",
+      "destination": "/Memeboard/assets/:path*"
     }
   ],
   "headers": [
