@@ -29,67 +29,21 @@ For Software:
 - [html5,css3,javascript,google fonts,html5 audio APT,canvas API]
 - [visual studio code,antigravity,git,github,live server,google fonts,chrome/chromium]
 
-For Hardware:
-- [List main components]
-- [List specifications]
-- [List tools required]
-
-### Implementation
-For Software:
-# Installation
-[commands]
-
-# Run
-[commands]
 
 ### Project Documentation
 For Software:
 
 # Screenshots (Add at least 3)
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+<img width="1600" height="900" alt="Screenshot 2026-09-12 064440" src="https://github.com/user-attachments/assets/7f57bded-1a20-4094-8b21-8a1b701030a7" />
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+<img width="1599" height="899" alt="Screenshot 2026-09-12 074430" src="https://github.com/user-attachments/assets/e74f54a8-ffd2-4e41-b8f0-3850cab284ae" />
 
-# Diagrams
-![Workflow](Add your workflow/architecture diagram here)
-*Add caption explaining your workflow*
-
-For Hardware:
-
-# Schematic & Circuit
-![Circuit](Add your circuit diagram here)
-*Add caption explaining connections*
-
-![Schematic](Add your schematic diagram here)
-*Add caption explaining the schematic*
-
-# Build Photos
-![Components](Add photo of your components here)
-*List out all components shown*
-
-![Build](Add photos of build process here)
-*Explain the build steps*
-
-![Final](Add photo of final product here)
-*Explain the final build*
 
 ### Project Demo
 # Video
 [[https://drive.google.com/file/d/1YUBa6UzUu4Tyu8cjcNnT3AkL_N1ajbtR/view?usp=sharing]
 ]()*Explain what the video demonstrates*
-
-# Additional Demos
-[Add any extra demo materials/links]
-
-## Team Contributions
-- [Name 1]: [Specific contributions]
-- [Name 2]: [Specific contributions]
-- [Name 3]: [Specific contributions]
 
 ---
 Made with ❤️ at TinkerHub Useless Projects 
