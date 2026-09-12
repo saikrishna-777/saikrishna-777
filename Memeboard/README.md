@@ -70,6 +70,17 @@ A chaotic meme keyboard web app that reacts to your typing with meme sounds, ani
 
 ---
 
+## ▲ Deploy to Vercel
+
+This is a framework-free static site and is ready to deploy directly from this folder:
+
+1. Import the GitHub repository into Vercel.
+2. Leave the framework preset as **Other**.
+3. Leave the build command and output directory empty.
+4. Deploy.
+
+The included `vercel.json` preserves clean URLs and applies long-term caching to the audio assets.
+
 ## 🗺️ Future Plans
 
 - **🎵 More Sounds & Custom Sound Packs**: Ability to drag-and-drop custom `.mp3` and `.wav` audio files into the `sounds/` directory.
