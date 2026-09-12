@@ -6,15 +6,11 @@
     {
       "source": "/",
       "destination": "/Memeboard/index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/Memeboard/$1"
     }
   ],
   "headers": [
     {
-      "source": "/sounds/(.*)",
+      "source": "/Memeboard/sounds/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
