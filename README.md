@@ -43,7 +43,7 @@ For Software:
 ### Project Demo
 # Video
 [[https://drive.google.com/file/d/1YUBa6UzUu4Tyu8cjcNnT3AkL_N1ajbtR/view?usp=sharing]
-]()*Explain what the video demonstrates*
+]()
 
 ---
 Made with ❤️ at TinkerHub Useless Projects 
